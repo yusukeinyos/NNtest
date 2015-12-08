@@ -25,6 +25,7 @@ namespace NNtest
 
         int N; //number of datasets
         int I; //dimention of data
+        int itteration;
 
         bool bias_flag;
 
@@ -42,8 +43,10 @@ namespace NNtest
             eta = 0.01;
             alpha = 0.01;
             bias_flag = true;
+            itteration = 100;
             textBox1.Text = eta.ToString();
             textBox2.Text = alpha.ToString();
+            textBox3.Text = itteration.ToString();
             checkBox1.Checked = true;
         }
         //-----------------------------------------------------------------------------
@@ -66,6 +69,9 @@ namespace NNtest
             plot(chart1);
             I = X[0].Length;
             w = new double[I];
+            for (int i = 0; i < I; i++)
+                chart2.Series[i].Points.Clear();
+
             for (int ii = 0; ii < itteration; ii++)
             {
                 //compute all activations
@@ -81,7 +87,33 @@ namespace NNtest
                 g = New.Array(I, i => Mt.Inner(xt[i], e)).Neg();
                 //make step, using learning rate eta and weight decay alpha
                 w = Mt.Sub(w, Mt.Mul(eta, Mt.Add(g, Mt.Mul(alpha, w))));
+
+                plot(chart2, chart2.Series[0], w[0], SeriesChartType.Spline, Color.YellowGreen); //dictionaryにより色とintを対応
+                plot(chart2, chart2.Series[1], w[1], SeriesChartType.Spline, Color.Red);
+                if (I == 3)
+                    plot(chart2, chart2.Series[2], w[2], SeriesChartType.Spline, Color.Blue);
+
             }
+        }
+        //-----------------------------------------------------------------------------
+        //決定境界
+        void boundary()
+        {
+            double[][] boundary;
+            int bin = 100;
+            boundary = New.Array(bin, n => New.Array(2, i => 0.0));
+            double[] x = New.Array(N, n => X[n][0]);
+            double x_min = x.Min();
+            double x_max = x.Max();
+            double interval = (double)(x_max - x_min) / bin;
+
+            for (int i = 0; i < N; i++)
+            {
+                boundary[i][0] = x_min + interval * i;
+                i++;
+            }
+
+
         }
         //-----------------------------------------------------------------------------
         double sigmoid(double d)
@@ -141,19 +173,34 @@ namespace NNtest
 
         }
         //-----------------------------------------------------------------------------
-        //2次元データプロット
-        void plot(Chart chart,double[][] data,bool update_flag)
+        //2次元データプロット(データ追加式)
+        void plot(Chart chart, Series series, double data, SeriesChartType st, Color color)
         {
-            if(data[0].Length==2)
+            series.Points.AddY(data);
+            series.Color = color;
+            series.MarkerColor = color;
+            series.MarkerSize = 2;
+            series.MarkerStyle = System.Windows.Forms.DataVisualization.Charting.MarkerStyle.Circle;
+            series.ChartType = st;
+            //chart.Series.Clear();
+            //chart.Series.Add(series);
+            chart.ChartAreas[0].BackColor = Color.Black;
+            chart.ChartAreas[0].BackImageTransparentColor = Color.Black;
+        }
+        //-----------------------------------------------------------------------------
+        //2次元データプロット
+        void plot(Chart chart, double[][] data, bool update_flag, SeriesChartType st, Color color)
+        {
+            if (data[0].Length == 2)
             {
                 Series series = new Series();
                 for (int n = 0; n < data.Length; n++)
                     series.Points.AddXY(data[n][0], data[n][1]);
-                series.Color = Color.Blue;
-                series.MarkerColor = Color.Blue;
+                series.Color = color;
+                series.MarkerColor = color;
                 series.MarkerSize = 10;
                 series.MarkerStyle = System.Windows.Forms.DataVisualization.Charting.MarkerStyle.Circle;
-                series.ChartType = SeriesChartType.Point;
+                series.ChartType = st;
                 if (!update_flag)
                     chart.Series.Clear();
                 chart.Series.Add(series);
@@ -164,8 +211,8 @@ namespace NNtest
         //-----------------------------------------------------------------------------
         private void button1_Click_1(object sender, EventArgs e)
         {
-            init();
-            update(100);
+            //init();
+            update(itteration);
         }
 
         private void textBox1_TextChanged_1(object sender, EventArgs e)
@@ -187,6 +234,12 @@ namespace NNtest
                 bias_flag = true;
             else
                 bias_flag = false;
+        }
+
+        private void textBox3_TextChanged(object sender, EventArgs e)
+        {
+            if (textBox3.Text != null)
+                itteration = int.Parse(textBox3.Text);
         }
     }
 
