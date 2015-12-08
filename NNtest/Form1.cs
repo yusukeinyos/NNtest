@@ -141,6 +141,27 @@ namespace NNtest
 
         }
         //-----------------------------------------------------------------------------
+        //2次元データプロット
+        void plot(Chart chart,double[][] data,bool update_flag)
+        {
+            if(data[0].Length==2)
+            {
+                Series series = new Series();
+                for (int n = 0; n < data.Length; n++)
+                    series.Points.AddXY(data[n][0], data[n][1]);
+                series.Color = Color.Blue;
+                series.MarkerColor = Color.Blue;
+                series.MarkerSize = 10;
+                series.MarkerStyle = System.Windows.Forms.DataVisualization.Charting.MarkerStyle.Circle;
+                series.ChartType = SeriesChartType.Point;
+                if (!update_flag)
+                    chart.Series.Clear();
+                chart.Series.Add(series);
+                chart.ChartAreas[0].BackColor = Color.Black;
+                chart.ChartAreas[0].BackImageTransparentColor = Color.Black;
+            }
+        }
+        //-----------------------------------------------------------------------------
         private void button1_Click_1(object sender, EventArgs e)
         {
             init();
