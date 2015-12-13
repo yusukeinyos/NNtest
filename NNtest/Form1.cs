@@ -71,7 +71,8 @@ namespace NNtest
             w = new double[I];
             for (int i = 0; i < I; i++)
                 chart2.Series[i].Points.Clear();
-
+            chart3.Series[0].Points.Clear();
+            listBox1.Items.Clear();
             for (int ii = 0; ii < itteration; ii++)
             {
                 //compute all activations
@@ -91,9 +92,15 @@ namespace NNtest
                 plot(chart2, chart2.Series[0], w[0], SeriesChartType.Spline, Color.YellowGreen); //dictionaryにより色とintを対応
                 plot(chart2, chart2.Series[1], w[1], SeriesChartType.Spline, Color.Red);
                 if (I == 3)
+                {
                     plot(chart2, chart2.Series[2], w[2], SeriesChartType.Spline, Color.Blue);
-
+                    chart2.Series[2].Enabled = true;
+                }
+                else
+                    chart2.Series[2].Enabled = false;
+                plot(chart3, chart3.Series[0], Mt.Inner(w, w) / 2.0, SeriesChartType.Spline, Color.YellowGreen);
             }
+            boundary();
         }
         //-----------------------------------------------------------------------------
         //決定境界
@@ -107,12 +114,15 @@ namespace NNtest
             double x_max = x.Max();
             double interval = (double)(x_max - x_min) / bin;
 
-            for (int i = 0; i < N; i++)
+            for (int i = 0; i < bin; i++)
             {
                 boundary[i][0] = x_min + interval * i;
-                i++;
+                if (I == 3)
+                    boundary[i][1] = -(w[0] * boundary[i][0] + w[2]) / w[1];
+                else
+                    boundary[i][1] = -(w[0] * boundary[i][0]) / w[1];
             }
-
+            plot(chart1, boundary, true, SeriesChartType.Spline, Color.White);
 
         }
         //-----------------------------------------------------------------------------
@@ -198,7 +208,7 @@ namespace NNtest
                     series.Points.AddXY(data[n][0], data[n][1]);
                 series.Color = color;
                 series.MarkerColor = color;
-                series.MarkerSize = 10;
+                series.MarkerSize = 2;
                 series.MarkerStyle = System.Windows.Forms.DataVisualization.Charting.MarkerStyle.Circle;
                 series.ChartType = st;
                 if (!update_flag)
@@ -217,14 +227,14 @@ namespace NNtest
 
         private void textBox1_TextChanged_1(object sender, EventArgs e)
         {
-            if (textBox1.Text != null)
+            if (textBox1.Text != "")
                 eta = double.Parse(textBox1.Text);
 
         }
 
         private void textBox2_TextChanged(object sender, EventArgs e)
         {
-            if (textBox2.Text != null)
+            if (textBox2.Text != "")
                 alpha = double.Parse(textBox2.Text);
         }
 
@@ -238,7 +248,7 @@ namespace NNtest
 
         private void textBox3_TextChanged(object sender, EventArgs e)
         {
-            if (textBox3.Text != null)
+            if (textBox3.Text != "")
                 itteration = int.Parse(textBox3.Text);
         }
     }
